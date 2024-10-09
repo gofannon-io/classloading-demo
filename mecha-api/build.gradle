@@ -1,0 +1,23 @@
+plugins {
+    id 'java-library'
+    id 'maven-publish'
+}
+
+group = 'xyz.gofannon.mecha'
+version = '1.0-SNAPSHOT'
+
+repositories {
+    mavenLocal()
+    mavenCentral()
+}
+
+dependencies {
+}
+
+publishing {
+    publications{
+        mechaApi(MavenPublication) {
+            from components.java
+        }
+    }
+}
