@@ -1,14 +1,18 @@
 plugins {
     id 'java'
+    id 'application'
 }
 
 group = 'xyz.gofannon.mecha'
 version = '1.0-SNAPSHOT'
 
-//configurations {
-//    dynamicJar
-//}
+configurations {
+    dynamicJar
+}
 
+application {
+    mainClass = 'xyz.gofannon.mecha.application.Main'
+}
 
 //var createJarIndex = tasks.register("createJarIndex") {
 //    doLast {
@@ -22,14 +26,28 @@ version = '1.0-SNAPSHOT'
 //}
 
 
-//var copyDynamicJar = tasks.register("copyDynamicJar", Copy) {
-//    from {
-//        configurations.dynamicJar
-//    }
-//    into {
-//        layout.buildDirectory.dir("resources/main")
-//    }
-//}
+var createJarIndex = tasks.register("createJarIndex") {
+    doLast {
+        var file = layout.buildDirectory.file("resources/main/embedded/jar-index.txt").get().asFile
+        if( file.exists())
+            file.delete()
+
+        var indexContent = configurations.dynamicJar.resolve()
+                .findAll { !it.name.contains("mecha-api") }
+                .collect {it.name}
+                .join("\n")
+        file.write(indexContent)
+    }
+}
+
+var copyDynamicJar = tasks.register("copyDynamicJar", Copy) {
+    from {
+        configurations.dynamicJar
+    }
+    into {
+        layout.buildDirectory.dir("resources/main/embedded")
+    }
+}
 
 
 //processResources.dependsOn(copyDynamicJar, createJarIndex)
@@ -41,12 +59,15 @@ repositories {
 }
 
 dependencies {
-    implementation('xyz.gofannon.mecha:mecha-api:1.0-SNAPSHOT')
+//    implementation('xyz.gofannon.mecha:mecha-api:1.0-SNAPSHOT')
+     implementation project(':mecha-api')
+     implementation project(':mecha-impl')
     implementation 'commons-io:commons-io:2.17.0'
     testImplementation platform('org.junit:junit-bom:5.11.2')
     testImplementation 'org.junit.jupiter:junit-jupiter'
 
-    //dynamicJar('xyz.gofannon.mecha:mecha-impl:1.0-SNAPSHOT')
+    //dynamicJar('xyz.gofannon.mecha:mecha-impl-2:2.0-SNAPSHOT')
+    dynamicJar project(':mecha-impl-2')
 }
 
 test {

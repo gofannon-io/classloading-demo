@@ -1,0 +1,7 @@
+rootProject.name = 'mecha-classloading-demo'
+
+include('mecha-api')
+include('mecha-impl')
+include('mecha-impl-2')
+include('mecha-application')
+

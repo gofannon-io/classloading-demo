@@ -1,0 +1,15 @@
+plugins {
+    id 'base'
+}
+
+group = 'xyz.gofannon.mecha'
+version = '0.0-SNAPSHOT'
+
+repositories {
+    mavenCentral()
+}
+
+
+wrapper {
+    gradleVersion = '8.10.2'
+}
