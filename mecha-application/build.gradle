@@ -1,3 +1,6 @@
+import xyz.gofannon.mecha.task.EmbedJarsTask
+import xyz.gofannon.mecha.task.IndexBuilderTask
+
 plugins {
     id 'java'
     id 'application'
@@ -7,7 +10,7 @@ group = 'xyz.gofannon.mecha'
 version = '1.0-SNAPSHOT'
 
 configurations {
-    dynamicJar
+    embeddedJar
 }
 
 application {
@@ -26,26 +29,45 @@ application {
 //}
 
 
-var createJarIndex = tasks.register("createJarIndex") {
-    doLast {
-        var file = layout.buildDirectory.file("resources/main/embedded/jar-index.txt").get().asFile
-        if( file.exists())
-            file.delete()
+//var createJarIndex = tasks.register("createJarIndex") {
+//    doLast {
+//        var file = layout.buildDirectory.file("resources/main/embedded/jar-index.txt").get().asFile
+//        if( file.exists())
+//            file.delete()
+//
+//        var indexContent = configurations.embeddedJar.resolve()
+//                .findAll { !it.name.contains("mecha-api") }
+//                .collect {it.name}
+//                .join("\n")
+//        file.write(indexContent)
+//    }
+//}
 
-        var indexContent = configurations.dynamicJar.resolve()
-                .findAll { !it.name.contains("mecha-api") }
-                .collect {it.name}
-                .join("\n")
-        file.write(indexContent)
-    }
-}
 
-var copyDynamicJar = tasks.register("copyDynamicJar", Copy) {
+//tasks.register("indexBuilderTask", IndexBuilderTask.class) {
+//    configuration = configurations.embeddedJar
+//    embeddedJarDirectory="resources/main/embedded"
+//    ignoredDependencies= ["xyz.gofannon.mecha:mecha-api"]
+//}
+
+
+tasks.register("embedJars", EmbedJarsTask.class) {
     from {
-        configurations.dynamicJar
+        configurations.embeddedJar
     }
     into {
         layout.buildDirectory.dir("resources/main/embedded")
+    }
+}
+
+var copyEmbeddedJar = tasks.register("copyEmbeddedJar", Copy.class) {
+    from {
+        configurations.embeddedJar {
+            exclude group: "xyz.gofannon.mecha", name: "mecha-api"
+        }
+    }
+    into {
+        layout.buildDirectory.dir("resources/main/embedded").get().asFile
     }
 }
 
@@ -60,14 +82,16 @@ repositories {
 
 dependencies {
 //    implementation('xyz.gofannon.mecha:mecha-api:1.0-SNAPSHOT')
-     implementation project(':mecha-api')
-     implementation project(':mecha-impl')
+    implementation project(':mecha-api')
+    implementation project(':mecha-impl')
     implementation 'commons-io:commons-io:2.17.0'
     testImplementation platform('org.junit:junit-bom:5.11.2')
     testImplementation 'org.junit.jupiter:junit-jupiter'
 
     //dynamicJar('xyz.gofannon.mecha:mecha-impl-2:2.0-SNAPSHOT')
-    dynamicJar project(':mecha-impl-2')
+    embeddedJar(project(':mecha-impl-2')) {
+        exclude group: 'xyz.gofannon.mecha', module: 'mecha-api'
+    }
 }
 
 test {
