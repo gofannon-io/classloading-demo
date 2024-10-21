@@ -60,8 +60,8 @@ public class LocalClassLoader extends ClassLoader {
 
     @Override
     protected Class<?> loadClass(String name, boolean resolve) throws ClassNotFoundException {
-        String clazzName = name.replace('.', '/') + ".class";
-        Class<?> clazz = findFromCache(clazzName);
+        String resourcePath = name.replace('.', '/') + ".class";
+        Class<?> clazz = findFromCache(resourcePath);
 
         if (clazz != null)
             return clazz;
@@ -73,7 +73,7 @@ public class LocalClassLoader extends ClassLoader {
         }
 
 
-        return super.loadClass(name.replace('/', '.'), resolve);
+        return super.loadClass(name, resolve);
     }
 
     private Class<?> loadInnerClass(String clazzName) throws ClassNotFoundException {
